@@ -1,0 +1,11 @@
+[package]
+name = "image_upscale"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# fast_image_resize = "3"
+libc = "0.2"

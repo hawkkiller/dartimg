@@ -1,0 +1,22 @@
+PODS:
+  - dartimg (0.0.1):
+    - FlutterMacOS
+  - FlutterMacOS (1.0.0)
+
+DEPENDENCIES:
+  - dartimg (from `Flutter/ephemeral/.symlinks/plugins/dartimg/macos`)
+  - FlutterMacOS (from `Flutter/ephemeral`)
+
+EXTERNAL SOURCES:
+  dartimg:
+    :path: Flutter/ephemeral/.symlinks/plugins/dartimg/macos
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+
+SPEC CHECKSUMS:
+  dartimg: 6e9d2124608bb82c5946dbfcfe5d9d374639dad1
+  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+
+PODFILE CHECKSUM: 236401fc2c932af29a9fcf0e97baeeb2d750d367
+
+COCOAPODS: 1.16.2
