@@ -41,4 +41,51 @@ class DartimgBindings {
       _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32)>>(
           'sum');
   late final _sum = _sumPtr.asFunction<int Function(int, int)>();
+
+  /// Receives compressed image bytes (e.g. PNG, JPG),
+  /// resizes it with Lanczos3 (default algorithm), returns raw RGBA buffer.
+  ResizeResult upscale_image_from_bytes(
+    ffi.Pointer<ffi.Uint8> bytes_ptr,
+    int bytes_len,
+    int upscale_factor,
+  ) {
+    return _upscale_image_from_bytes(
+      bytes_ptr,
+      bytes_len,
+      upscale_factor,
+    );
+  }
+
+  late final _upscale_image_from_bytesPtr = _lookup<
+      ffi.NativeFunction<
+          ResizeResult Function(ffi.Pointer<ffi.Uint8>, ffi.UintPtr,
+              ffi.Uint32)>>('upscale_image_from_bytes');
+  late final _upscale_image_from_bytes = _upscale_image_from_bytesPtr
+      .asFunction<ResizeResult Function(ffi.Pointer<ffi.Uint8>, int, int)>();
+
+  void free_image_buffer(
+    ffi.Pointer<ffi.Uint8> ptr,
+    int len,
+  ) {
+    return _free_image_buffer(
+      ptr,
+      len,
+    );
+  }
+
+  late final _free_image_bufferPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Pointer<ffi.Uint8>, ffi.UintPtr)>>('free_image_buffer');
+  late final _free_image_buffer = _free_image_bufferPtr
+      .asFunction<void Function(ffi.Pointer<ffi.Uint8>, int)>();
+}
+
+final class ResizeResult extends ffi.Struct {
+  external ffi.Pointer<ffi.Uint8> data;
+
+  @ffi.UintPtr()
+  external int len;
+
+  external ffi.Pointer<ffi.Uint8> message;
 }
