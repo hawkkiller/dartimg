@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -24,11 +25,25 @@ class _MyAppState extends State<MyApp> {
   }
 
   late Future<Uint8List> _bytes;
+  Uint8List? _upscaledImage;
 
   @override
   void initState() {
     _bytes = _loadImage();
     super.initState();
+  }
+
+  Uint8List _getUpscaledImage(Uint8List image) {
+    if (_upscaledImage != null) return _upscaledImage!;
+    _upscaledImage = dartimg.upscaleImage(image, 4);
+
+    final file = File('image.jpg');
+    final pwd = Directory.current.path;
+    print('Current directory: $pwd');
+    file.writeAsBytes(_upscaledImage!);
+    print('Image saved to $pwd/image.jpg');
+
+    return _upscaledImage!;
   }
 
   @override
@@ -44,19 +59,22 @@ class _MyAppState extends State<MyApp> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
+
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
+
                 return Row(
                   children: [
                     Expanded(
                       child: Image.memory(
                         snapshot.data!,
+                        fit: BoxFit.cover,
                       ),
                     ),
                     Expanded(
                       child: Image.memory(
-                        dartimg.upscaleImage(snapshot.data!, 2),
+                        _getUpscaledImage(snapshot.data!),
                         fit: BoxFit.cover,
                       ),
                     ),

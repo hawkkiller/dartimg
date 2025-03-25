@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-fast_image_resize = { version = "5.1.2", features = []}
-image = { version = "0.24", default-features = false, features = ["png", "jpeg", "webp"] }
+image = { version = "0.25.5" }
 libc = "0.2"
+log = "0.4.27"
   

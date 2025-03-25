@@ -1,30 +1,74 @@
 import 'dart:ffi' as ffi;
-
 // import 'package:ffi/ffi.dart';
 import 'dart:typed_data';
 
 import 'package:dartimg/src/dartimg_bindings.dart';
 import 'package:ffi/ffi.dart';
+import 'package:image/image.dart';
 
-Uint8List upscaleImage(Uint8List image, int upscaleFactor) {
+Uint8List upscaleImage(Uint8List image, double upscaleFactor) {
+  final stopwatch = Stopwatch()..start();
   final bytesPtr = uint8ListToPointer(image);
   final bytesLen = image.lengthInBytes;
 
-  final result = _bindings.upscale_image_from_bytes(bytesPtr, bytesLen, upscaleFactor);
-  final resultPtr = result.data;
-  final resultLen = result.len;
-  final resultError = result.message.cast<Utf8>().toDartString();
+  final result = _bindings.upscale_image_from_bytes(
+    bytesPtr,
+    bytesLen,
+    upscaleFactor,
+  );
+
+  if (!result.is_success) {
+    final error = result.error;
+
+    final code = error.error_code;
+    final message = error.message.cast<Utf8>().toDartString();
+
+    // Free the error message pointer
+    malloc.free(error.message);
+
+    throw Exception('Error code: $code, message: $message');
+  }
+
+  final data = result.success.data;
+  final length = result.success.len;
 
   // Convert the result pointer back to a Uint8List
-  final resultList = Uint8List.fromList(resultPtr.asTypedList(resultLen));
+  final resultList = Uint8List.fromList(data.asTypedList(length));
+
   // Free the allocated memory
   malloc.free(bytesPtr);
 
-  // Free the image buffer in C
-  _bindings.free_image_buffer(resultPtr, resultLen);
+  malloc.free(data);
+  final endTime = stopwatch.elapsedMilliseconds;
+  print('Image upscale took $endTime ms');
+  return resultList;
+}
 
-  // Free the result pointer
-  malloc.free(resultPtr);
+Uint8List upscaleImageDart(Uint8List image, double upscaleFactor) {
+  final stopwatch = Stopwatch()..start();
+  final img = decodeImage(image);
+
+  if (img == null) {
+    throw Exception('Failed to decode image');
+  }
+
+  final width = (img.width * upscaleFactor).round();
+  final height = (img.height * upscaleFactor).round();
+
+  final resizedImage = copyResize(
+    img,
+    width: width,
+    height: height,
+    interpolation: Interpolation.cubic,
+  );
+
+  // Encode the resized image back to bytes
+  final result = encodeJpg(resizedImage, quality: 100);
+
+  // Convert the result to Uint8List
+  final resultList = Uint8List.fromList(result);
+  final endTime = stopwatch.elapsedMilliseconds;
+  print('Image upscale took $endTime ms');
   return resultList;
 }
 

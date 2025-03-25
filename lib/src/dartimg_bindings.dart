@@ -47,7 +47,7 @@ class DartimgBindings {
   ResizeResult upscale_image_from_bytes(
     ffi.Pointer<ffi.Uint8> bytes_ptr,
     int bytes_len,
-    int upscale_factor,
+    double upscale_factor,
   ) {
     return _upscale_image_from_bytes(
       bytes_ptr,
@@ -59,33 +59,30 @@ class DartimgBindings {
   late final _upscale_image_from_bytesPtr = _lookup<
       ffi.NativeFunction<
           ResizeResult Function(ffi.Pointer<ffi.Uint8>, ffi.UintPtr,
-              ffi.Uint32)>>('upscale_image_from_bytes');
+              ffi.Float)>>('upscale_image_from_bytes');
   late final _upscale_image_from_bytes = _upscale_image_from_bytesPtr
-      .asFunction<ResizeResult Function(ffi.Pointer<ffi.Uint8>, int, int)>();
-
-  void free_image_buffer(
-    ffi.Pointer<ffi.Uint8> ptr,
-    int len,
-  ) {
-    return _free_image_buffer(
-      ptr,
-      len,
-    );
-  }
-
-  late final _free_image_bufferPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Void Function(
-              ffi.Pointer<ffi.Uint8>, ffi.UintPtr)>>('free_image_buffer');
-  late final _free_image_buffer = _free_image_bufferPtr
-      .asFunction<void Function(ffi.Pointer<ffi.Uint8>, int)>();
+      .asFunction<ResizeResult Function(ffi.Pointer<ffi.Uint8>, int, double)>();
 }
 
-final class ResizeResult extends ffi.Struct {
+final class ResizeSuccess extends ffi.Struct {
   external ffi.Pointer<ffi.Uint8> data;
 
   @ffi.UintPtr()
   external int len;
+}
+
+final class ResizeError extends ffi.Struct {
+  @ffi.Int32()
+  external int error_code;
 
   external ffi.Pointer<ffi.Uint8> message;
+}
+
+final class ResizeResult extends ffi.Struct {
+  external ResizeSuccess success;
+
+  external ResizeError error;
+
+  @ffi.Bool()
+  external bool is_success;
 }
