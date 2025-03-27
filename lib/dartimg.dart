@@ -74,7 +74,7 @@ final _dylib = () {
   if (Platform.isMacOS || Platform.isIOS) {
     return ffi.DynamicLibrary.open('$_libname.framework/$_libname');
   } else if (Platform.isWindows) {
-    return ffi.DynamicLibrary.open('$_libname.dll');
+    return ffi.DynamicLibrary.open('image_upscale.dll');
   } else {
     throw UnsupportedError('Unsupported platform');
   }
