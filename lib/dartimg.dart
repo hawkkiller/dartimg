@@ -72,7 +72,7 @@ int sum(int a, int b) => _bindings.sum(a, b);
 const _libname = 'dartimg';
 final _dylib = () {
   if (Platform.isMacOS || Platform.isIOS) {
-    return ffi.DynamicLibrary.open('lib$_libname.dylib');
+    return ffi.DynamicLibrary.open('$_libname.framework/$_libname');
   } else if (Platform.isWindows) {
     return ffi.DynamicLibrary.open('$_libname.dll');
   } else {
