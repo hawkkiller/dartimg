@@ -4,7 +4,6 @@ import 'dart:typed_data';
 
 import 'package:dartimg/src/dartimg_bindings.dart';
 import 'package:ffi/ffi.dart';
-import 'package:image/image.dart';
 
 Uint8List upscaleImage(Uint8List image, double upscaleFactor) {
   final bytesPtr = uint8ListToPointer(image);
@@ -41,38 +40,11 @@ Uint8List upscaleImage(Uint8List image, double upscaleFactor) {
   return resultList;
 }
 
-Uint8List upscaleImageDart(Uint8List image, double upscaleFactor) {
-  final img = decodeImage(image);
-
-  if (img == null) {
-    throw Exception('Failed to decode image');
-  }
-
-  final width = (img.width * upscaleFactor).round();
-  final height = (img.height * upscaleFactor).round();
-
-  final resizedImage = copyResize(
-    img,
-    width: width,
-    height: height,
-    interpolation: Interpolation.cubic,
-  );
-
-  // Encode the resized image back to bytes
-  final result = encodeJpg(resizedImage, quality: 100);
-
-  // Convert the result to Uint8List
-  final resultList = Uint8List.fromList(result);
-
-  return resultList;
-}
-
 int sum(int a, int b) => _bindings.sum(a, b);
 
-const _libname = 'dartimg';
 final _dylib = () {
   if (Platform.isMacOS || Platform.isIOS) {
-    return ffi.DynamicLibrary.open('$_libname.framework/$_libname');
+    return ffi.DynamicLibrary.open('libimage_upscale.dylib');
   } else if (Platform.isWindows) {
     return ffi.DynamicLibrary.open('image_upscale.dll');
   } else {
