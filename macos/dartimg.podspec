@@ -18,7 +18,6 @@ A new Flutter FFI plugin project.
   # paths, so Classes contains a forwarder C file that relatively imports
   # `../src/*` so that the C sources can be shared among all target platforms.
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
   s.vendored_libraries = 'nativelib/libimage_upscale.dylib'
   s.dependency 'FlutterMacOS'
 
