@@ -17,6 +17,3 @@ preamble: |
 comments:
   style: any
   length: full
-compiler-opts:
-  - -isysroot
-  - /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
