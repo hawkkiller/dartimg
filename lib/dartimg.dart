@@ -1,5 +1,5 @@
 import 'dart:ffi' as ffi;
-// import 'package:ffi/ffi.dart';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dartimg/src/dartimg_bindings.dart';
@@ -7,7 +7,6 @@ import 'package:ffi/ffi.dart';
 import 'package:image/image.dart';
 
 Uint8List upscaleImage(Uint8List image, double upscaleFactor) {
-  final stopwatch = Stopwatch()..start();
   final bytesPtr = uint8ListToPointer(image);
   final bytesLen = image.lengthInBytes;
 
@@ -35,17 +34,14 @@ Uint8List upscaleImage(Uint8List image, double upscaleFactor) {
   // Convert the result pointer back to a Uint8List
   final resultList = Uint8List.fromList(data.asTypedList(length));
 
-  // Free the allocated memory
   malloc.free(bytesPtr);
 
-  malloc.free(data);
-  final endTime = stopwatch.elapsedMilliseconds;
-  print('Image upscale took $endTime ms');
+  _bindings.deallocate_buffer(data, bytesLen);
+
   return resultList;
 }
 
 Uint8List upscaleImageDart(Uint8List image, double upscaleFactor) {
-  final stopwatch = Stopwatch()..start();
   final img = decodeImage(image);
 
   if (img == null) {
@@ -67,15 +63,23 @@ Uint8List upscaleImageDart(Uint8List image, double upscaleFactor) {
 
   // Convert the result to Uint8List
   final resultList = Uint8List.fromList(result);
-  final endTime = stopwatch.elapsedMilliseconds;
-  print('Image upscale took $endTime ms');
+
   return resultList;
 }
 
 int sum(int a, int b) => _bindings.sum(a, b);
 
 const _libname = 'dartimg';
-final _dylib = ffi.DynamicLibrary.open('$_libname.framework/$_libname');
+final _dylib = () {
+  if (Platform.isMacOS || Platform.isIOS) {
+    return ffi.DynamicLibrary.open('lib$_libname.dylib');
+  } else if (Platform.isWindows) {
+    return ffi.DynamicLibrary.open('$_libname.dll');
+  } else {
+    throw UnsupportedError('Unsupported platform');
+  }
+}();
+
 final _bindings = DartimgBindings(_dylib);
 
 ffi.Pointer<ffi.Uint8> uint8ListToPointer(Uint8List data) {

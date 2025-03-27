@@ -21,3 +21,8 @@ set(dartimg_bundled_libraries
   $<TARGET_FILE:dartimg>
   PARENT_SCOPE
 )
+
+add_custom_command(TARGET dartimg POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${CMAKE_CURRENT_SOURCE_DIR}/nativelib/image_upscale.dll"
+    "$<TARGET_FILE_DIR:dartimg>")

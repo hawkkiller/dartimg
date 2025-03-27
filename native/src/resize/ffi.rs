@@ -89,3 +89,8 @@ pub extern "C" fn upscale_image_from_bytes(
         Err(e) => ResizeResult::error(ErrorCode::ResizeFailed, e),
     }
 }
+
+#[no_mangle]
+pub extern "C" fn deallocate_buffer(ptr: *mut u8, len: usize) {
+    drop(unsafe { Vec::from_raw_parts(ptr, len, len) });
+}

@@ -62,6 +62,23 @@ class DartimgBindings {
               ffi.Float)>>('upscale_image_from_bytes');
   late final _upscale_image_from_bytes = _upscale_image_from_bytesPtr
       .asFunction<ResizeResult Function(ffi.Pointer<ffi.Uint8>, int, double)>();
+
+  void deallocate_buffer(
+    ffi.Pointer<ffi.Uint8> ptr,
+    int len,
+  ) {
+    return _deallocate_buffer(
+      ptr,
+      len,
+    );
+  }
+
+  late final _deallocate_bufferPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Pointer<ffi.Uint8>, ffi.UintPtr)>>('deallocate_buffer');
+  late final _deallocate_buffer = _deallocate_bufferPtr
+      .asFunction<void Function(ffi.Pointer<ffi.Uint8>, int)>();
 }
 
 final class ResizeSuccess extends ffi.Struct {
