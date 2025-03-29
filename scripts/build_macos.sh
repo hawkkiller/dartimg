@@ -23,9 +23,11 @@ UNIVERSAL_LIB=libimage_upscale_universal.dylib
 
 # Combine with lipo into a universal binary
 lipo -create -output $UNIVERSAL_LIB $X86_LIB $ARM_LIB
+install_name_tool -id "@rpath/libimage_upscale.dylib" $UNIVERSAL_LIB
 
 # Prepare destination
 mkdir -p ../macos/nativelib
+
 
 # Move universal binary
 mv $UNIVERSAL_LIB ../macos/nativelib/libimage_upscale.dylib

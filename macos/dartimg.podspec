@@ -15,6 +15,7 @@ A new Flutter FFI plugin project.
 
   s.source           = { :path => '.' }
   s.vendored_libraries = 'nativelib/libimage_upscale.dylib'
+  s.xcconfig = { 'LD_RUNPATH_SEARCH_PATHS' => '@executable_path/../Frameworks' }
   s.dependency 'FlutterMacOS'
 
   s.platform = :osx, '10.11'
