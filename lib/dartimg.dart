@@ -44,7 +44,7 @@ int sum(int a, int b) => _bindings.sum(a, b);
 
 final _dylib = () {
   if (Platform.isMacOS || Platform.isIOS) {
-    return ffi.DynamicLibrary.open('libimage_upscale.dylib');
+    return ffi.DynamicLibrary.process();
   } else if (Platform.isWindows) {
     return ffi.DynamicLibrary.open('image_upscale.dll');
   } else {
