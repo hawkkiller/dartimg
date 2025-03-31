@@ -42,9 +42,7 @@ class DartimgBindings {
           'sum');
   late final _sum = _sumPtr.asFunction<int Function(int, int)>();
 
-  /// Receives compressed image bytes (e.g. PNG, JPG),
-  /// resizes it with Lanczos3 (default algorithm), returns raw RGBA buffer.
-  ResizeResult upscale_image_from_bytes(
+  ffi.Pointer<ResizeResult> upscale_image_from_bytes(
     ffi.Pointer<ffi.Uint8> bytes_ptr,
     int bytes_len,
     double upscale_factor,
@@ -58,10 +56,12 @@ class DartimgBindings {
 
   late final _upscale_image_from_bytesPtr = _lookup<
       ffi.NativeFunction<
-          ResizeResult Function(ffi.Pointer<ffi.Uint8>, ffi.UintPtr,
-              ffi.Float)>>('upscale_image_from_bytes');
-  late final _upscale_image_from_bytes = _upscale_image_from_bytesPtr
-      .asFunction<ResizeResult Function(ffi.Pointer<ffi.Uint8>, int, double)>();
+          ffi.Pointer<ResizeResult> Function(ffi.Pointer<ffi.Uint8>,
+              ffi.UintPtr, ffi.Float)>>('upscale_image_from_bytes');
+  late final _upscale_image_from_bytes =
+      _upscale_image_from_bytesPtr.asFunction<
+          ffi.Pointer<ResizeResult> Function(
+              ffi.Pointer<ffi.Uint8>, int, double)>();
 
   void deallocate_buffer(
     ffi.Pointer<ffi.Uint8> ptr,
@@ -79,6 +79,33 @@ class DartimgBindings {
               ffi.Pointer<ffi.Uint8>, ffi.UintPtr)>>('deallocate_buffer');
   late final _deallocate_buffer = _deallocate_bufferPtr
       .asFunction<void Function(ffi.Pointer<ffi.Uint8>, int)>();
+
+  void deallocate_resize_result(
+    ffi.Pointer<ResizeResult> ptr,
+  ) {
+    return _deallocate_resize_result(
+      ptr,
+    );
+  }
+
+  late final _deallocate_resize_resultPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ResizeResult>)>>(
+          'deallocate_resize_result');
+  late final _deallocate_resize_result = _deallocate_resize_resultPtr
+      .asFunction<void Function(ffi.Pointer<ResizeResult>)>();
+
+  late final addresses = _SymbolAddresses(this);
+}
+
+class _SymbolAddresses {
+  final DartimgBindings _library;
+  _SymbolAddresses(this._library);
+  ffi.Pointer<
+          ffi.NativeFunction<
+              ffi.Void Function(ffi.Pointer<ffi.Uint8>, ffi.UintPtr)>>
+      get deallocate_buffer => _library._deallocate_bufferPtr;
+  ffi.Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ResizeResult>)>>
+      get deallocate_resize_result => _library._deallocate_resize_resultPtr;
 }
 
 final class ResizeSuccess extends ffi.Struct {
@@ -92,7 +119,7 @@ final class ResizeError extends ffi.Struct {
   @ffi.Int32()
   external int error_code;
 
-  external ffi.Pointer<ffi.Uint8> message;
+  external ffi.Pointer<ffi.Char> message;
 }
 
 final class ResizeResult extends ffi.Struct {

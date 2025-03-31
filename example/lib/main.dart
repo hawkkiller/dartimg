@@ -33,9 +33,8 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
-  Uint8List _getUpscaledImage(Uint8List image) {
-    if (_upscaledImage != null) return _upscaledImage!;
-    _upscaledImage = dartimg.upscaleImage(image, 4);
+  Uint8List _upscaleImage(Uint8List image) {
+    _upscaledImage = dartimg.upscaleImage(image, 2);
 
     final file = File('image.jpg');
     final pwd = Directory.current.path;
@@ -46,10 +45,26 @@ class _MyAppState extends State<MyApp> {
     return _upscaledImage!;
   }
 
+  Uint8List _getUpscaledImage(Uint8List toUpscale) {
+    return _upscaledImage ?? _upscaleImage(toUpscale);
+  }
+
+  Uint8List _updateUpscaledImage(Uint8List toUpscale) {
+    _upscaledImage = dartimg.upscaleImage(toUpscale, 2);
+    setState(() {});
+    return _upscaledImage!;
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              _updateUpscaledImage(_upscaledImage!);
+            },
+            child: const Icon(Icons.add),
+          ),
           appBar: AppBar(
             title: const Text('Dart Image Example'),
           ),

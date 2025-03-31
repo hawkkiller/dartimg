@@ -4,7 +4,7 @@ description: |
   Bindings for `native/out/dartimg.h`.
 
   Regenerate bindings with `dart run ffigen --config ffigen.yaml`.
-output: 'lib/dartimg_bindings.dart'
+output: 'lib/src/dartimg_bindings.dart'
 headers:
   entry-points:
     - 'native/out/dartimg.h'
@@ -17,3 +17,11 @@ preamble: |
 comments:
   style: any
   length: full
+functions:
+  symbol-address:
+    include:
+      - deallocate_buffer
+      - deallocate_resize_result
+compiler-opts:
+  - -isysroot
+  - /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk

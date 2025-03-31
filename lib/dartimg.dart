@@ -15,27 +15,28 @@ Uint8List upscaleImage(Uint8List image, double upscaleFactor) {
     upscaleFactor,
   );
 
-  if (!result.is_success) {
-    final error = result.error;
+  malloc.free(bytesPtr);
+
+  final resultRef = result.ref;
+
+  if (!resultRef.is_success) {
+    final error = resultRef.error;
 
     final code = error.error_code;
     final message = error.message.cast<Utf8>().toDartString();
 
-    // Free the error message pointer
-    malloc.free(error.message);
-
     throw Exception('Error code: $code, message: $message');
   }
 
-  final data = result.success.data;
-  final length = result.success.len;
+  final data = resultRef.success.data;
+  final length = resultRef.success.len;
 
   // Convert the result pointer back to a Uint8List
-  final resultList = Uint8List.fromList(data.asTypedList(length));
-
-  malloc.free(bytesPtr);
-
-  _bindings.deallocate_buffer(data, bytesLen);
+  final resultList = data.asTypedList(
+    length,
+    finalizer: _bindings.addresses.deallocate_resize_result.cast(),
+    token: result.cast(),
+  );
 
   return resultList;
 }
