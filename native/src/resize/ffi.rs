@@ -106,6 +106,7 @@ pub extern "C" fn deallocate_buffer(ptr: *mut u8, len: usize) {
 
 #[no_mangle]
 pub extern "C" fn deallocate_resize_result(ptr: *mut ResizeResult) {
+    println!("Deallocating ResizeResult");
     if ptr.is_null() {
         return;
     }

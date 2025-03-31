@@ -34,8 +34,11 @@ Uint8List upscaleImage(Uint8List image, double upscaleFactor) {
   final length = resultRef.success.len;
 
   // Convert the result pointer back to a Uint8List
-  final resultList = Uint8List.fromList(data.asTypedList(length));
-  _bindings.deallocate_resize_result(result);
+  final resultList = data.asTypedList(
+    length,
+    finalizer: _bindings.addresses.deallocate_resize_result.cast(),
+    token: result.cast(),
+  );
 
   return resultList;
 }

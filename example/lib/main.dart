@@ -1,9 +1,10 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:dartimg/dartimg.dart' as dartimg;
 import 'package:http/http.dart';
+import 'package:flutter/foundation.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,85 +18,100 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Future<Uint8List> _loadImage() async {
-    final data = await get(Uri.parse(
-        'https://images.unsplash.com/photo-1726137569966-a7354383e2ae?q=80&w=4000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'));
-
-    return data.bodyBytes;
-  }
-
-  late Future<Uint8List> _bytes;
+  late Future<Uint8List> _originalImage;
   Uint8List? _upscaledImage;
 
   @override
   void initState() {
-    _bytes = _loadImage();
     super.initState();
+    _originalImage = _loadImageAndRunParallelIsolates();
   }
 
-  Uint8List _upscaleImage(Uint8List image) {
-    _upscaledImage = dartimg.upscaleImage(image, 2);
+  Future<Uint8List> _loadImageAndRunParallelIsolates() async {
+    final imageBytes = await _downloadImage();
+    print('Image downloaded. Upscaling once...');
 
-    final file = File('image.jpg');
-    final pwd = Directory.current.path;
-    print('Current directory: $pwd');
-    file.writeAsBytes(_upscaledImage!);
-    print('Image saved to $pwd/image.jpg');
+    final initial = dartimg.upscaleImage(imageBytes, 4);
 
-    return _upscaledImage!;
+    print('Running 100 upscales in 4 parallel isolates...');
+
+    final stopwatch = Stopwatch()..start();
+
+    // Launch multiple isolates to do the same work in parallel
+    final isolateCount = 4;
+    final futures = List.generate(
+      isolateCount,
+      (_) => compute(_upscaleLoop, initial),
+    );
+
+    final results = await Future.wait(futures);
+    stopwatch.stop();
+    print('All isolates finished in ${stopwatch.elapsedMilliseconds} ms');
+
+    return imageBytes;
   }
 
-  Uint8List _getUpscaledImage(Uint8List toUpscale) {
-    return _upscaledImage ?? _upscaleImage(toUpscale);
+  static void _upscaleLoop(Uint8List image) {
+    for (int i = 0; i < 100; i++) {
+      dartimg.upscaleImage(image, 2);
+      print('Isolate ${Isolate.current.hashCode}: iteration ${i + 1}');
+    }
   }
 
-  Uint8List _updateUpscaledImage(Uint8List toUpscale) {
-    _upscaledImage = dartimg.upscaleImage(toUpscale, 2);
-    setState(() {});
-    return _upscaledImage!;
+  Future<Uint8List> _downloadImage() async {
+    final response = await get(Uri.parse(
+      'https://images.unsplash.com/photo-1726137569966-a7354383e2ae?q=80&w=400&auto=format&fit=crop',
+    ));
+    return response.bodyBytes;
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              _updateUpscaledImage(_upscaledImage!);
-            },
-            child: const Icon(Icons.add),
-          ),
-          appBar: AppBar(
-            title: const Text('Dart Image Example'),
-          ),
-          body: FutureBuilder(
-              future: _bytes,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+        appBar: AppBar(
+          title: const Text('Dart Image Example'),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            if (_upscaledImage != null) {
+              setState(() {
+                _upscaledImage = dartimg.upscaleImage(_upscaledImage!, 2);
+              });
+              print('Manually upscaled again.');
+            }
+          },
+          child: const Icon(Icons.add),
+        ),
+        body: FutureBuilder(
+          future: _originalImage,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
 
-                return Row(
-                  children: [
-                    Expanded(
-                      child: Image.memory(
-                        snapshot.data!,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    Expanded(
-                      child: Image.memory(
-                        _getUpscaledImage(snapshot.data!),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ],
-                );
-              })),
+            return Row(
+              children: [
+                Expanded(
+                  child: Image.memory(
+                    snapshot.data!,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Expanded(
+                  child: _upscaledImage != null
+                      ? Image.memory(_upscaledImage!, fit: BoxFit.cover)
+                      : const Center(child: Text('Upscaling...')),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 }
