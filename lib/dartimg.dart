@@ -40,6 +40,11 @@ Uint8List upscaleImage(Uint8List image, double upscaleFactor) {
     token: result.cast(),
   );
 
+  Future.delayed(const Duration(seconds: 10000), () {
+    // Make sure the result is not freed. THIS IS FOR TEST
+    print(result);
+  });
+
   return resultList;
 }
 
