@@ -25,6 +25,8 @@ Uint8List upscaleImage(Uint8List image, double upscaleFactor) {
     final code = error.error_code;
     final message = error.message.cast<Utf8>().toDartString();
 
+    _bindings.deallocate_resize_result(result);
+
     throw Exception('Error code: $code, message: $message');
   }
 
