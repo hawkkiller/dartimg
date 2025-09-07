@@ -34,7 +34,12 @@ class _MyAppState extends State<MyApp> {
   }
 
   Uint8List _upscaleImage(Uint8List image) {
-    _upscaledImage = dartimg.upscaleImage(image, 2);
+    _upscaledImage = dartimg.upscaleImage(
+      image: image,
+      inputImageFormat: 'jpeg',
+      outputImageFormat: 'jpeg',
+      upscaleFactor: 2,
+    );
 
     final file = File('image.jpg');
     final pwd = Directory.current.path;
@@ -50,7 +55,12 @@ class _MyAppState extends State<MyApp> {
   }
 
   Uint8List _updateUpscaledImage(Uint8List toUpscale) {
-    _upscaledImage = dartimg.upscaleImage(toUpscale, 2);
+    _upscaledImage = dartimg.upscaleImage(
+      image: toUpscale,
+      inputImageFormat: 'jpeg',
+      outputImageFormat: 'jpeg',
+      upscaleFactor: 2,
+    );
     setState(() {});
     return _upscaledImage!;
   }

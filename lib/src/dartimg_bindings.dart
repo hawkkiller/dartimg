@@ -46,22 +46,30 @@ class DartimgBindings {
     ffi.Pointer<ffi.Uint8> bytes_ptr,
     int bytes_len,
     double upscale_factor,
+    ffi.Pointer<ffi.Uint8> input_image_format,
+    ffi.Pointer<ffi.Uint8> output_image_format,
   ) {
     return _upscale_image_from_bytes(
       bytes_ptr,
       bytes_len,
       upscale_factor,
+      input_image_format,
+      output_image_format,
     );
   }
 
   late final _upscale_image_from_bytesPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Pointer<ResizeResult> Function(ffi.Pointer<ffi.Uint8>,
-              ffi.UintPtr, ffi.Float)>>('upscale_image_from_bytes');
+          ffi.Pointer<ResizeResult> Function(
+              ffi.Pointer<ffi.Uint8>,
+              ffi.UintPtr,
+              ffi.Float,
+              ffi.Pointer<ffi.Uint8>,
+              ffi.Pointer<ffi.Uint8>)>>('upscale_image_from_bytes');
   late final _upscale_image_from_bytes =
       _upscale_image_from_bytesPtr.asFunction<
-          ffi.Pointer<ResizeResult> Function(
-              ffi.Pointer<ffi.Uint8>, int, double)>();
+          ffi.Pointer<ResizeResult> Function(ffi.Pointer<ffi.Uint8>, int,
+              double, ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>)>();
 
   void deallocate_buffer(
     ffi.Pointer<ffi.Uint8> ptr,

@@ -23,7 +23,9 @@ int32_t sum(int32_t a, int32_t b);
 
 struct ResizeResult *upscale_image_from_bytes(const uint8_t *bytes_ptr,
                                               uintptr_t bytes_len,
-                                              float upscale_factor);
+                                              float upscale_factor,
+                                              const uint8_t *input_image_format,
+                                              const uint8_t *output_image_format);
 
 void deallocate_buffer(uint8_t *ptr, uintptr_t len);
 

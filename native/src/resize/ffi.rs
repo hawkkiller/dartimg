@@ -1,5 +1,7 @@
-use std::{slice, ffi::CString};
 use std::os::raw::c_char;
+use std::{ffi::CString, slice};
+
+use image::ImageFormat;
 
 use super::engine;
 
@@ -78,6 +80,8 @@ pub extern "C" fn upscale_image_from_bytes(
     bytes_ptr: *const u8,
     bytes_len: usize,
     upscale_factor: f32,
+    input_image_format: *const u8,
+    output_image_format: *const u8,
 ) -> *mut ResizeResult {
     if bytes_ptr.is_null() || bytes_len == 0 || upscale_factor == 0.0 {
         return ResizeResult::error(ErrorCode::InvalidInput, "Invalid input".to_string());
@@ -89,7 +93,24 @@ pub extern "C" fn upscale_image_from_bytes(
         return ResizeResult::error(ErrorCode::InvalidInput, "Empty input".to_string());
     }
 
-    match engine::resize_image_inline(input, bytes_len, upscale_factor) {
+    let input_format_str = unsafe { std::ffi::CStr::from_ptr(input_image_format as *const c_char) }
+        .to_str()
+        .unwrap_or("png");
+    let output_format_str =
+        unsafe { std::ffi::CStr::from_ptr(output_image_format as *const c_char) }
+            .to_str()
+            .unwrap_or("png");
+
+    let input_format = ImageFormat::from_extension(input_format_str).unwrap_or(ImageFormat::Png);
+    let output_format = ImageFormat::from_extension(output_format_str).unwrap_or(ImageFormat::Png);
+
+    match engine::resize_image_inline(
+        input,
+        bytes_len,
+        upscale_factor,
+        input_format,
+        output_format,
+    ) {
         Ok(buffer) => ResizeResult::success(buffer),
         Err(e) => ResizeResult::error(ErrorCode::ResizeFailed, e),
     }
@@ -114,7 +135,8 @@ pub extern "C" fn deallocate_resize_result(ptr: *mut ResizeResult) {
         let result = Box::from_raw(ptr);
 
         if result.is_success && !result.success.data.is_null() && result.success.len > 0 {
-            let vec = Vec::from_raw_parts(result.success.data, result.success.len, result.success.len);
+            let vec =
+                Vec::from_raw_parts(result.success.data, result.success.len, result.success.len);
             println!("Deallocating buffer of length {}", vec.len());
             drop(vec);
         }

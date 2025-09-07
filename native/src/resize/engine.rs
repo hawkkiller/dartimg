@@ -1,11 +1,13 @@
 use std::io::Cursor;
 
-use image::{DynamicImage, GenericImageView};
+use image::{DynamicImage, GenericImageView, ImageFormat};
 
 pub fn resize_image_inline(
     bytes: &[u8],
     length: usize,
     upscale_factor: f32,
+    input_format: ImageFormat,
+    output_format: ImageFormat,
 ) -> Result<Vec<u8>, String> {
     if bytes.is_empty() || length == 0 {
         return Err("Invalid input: empty bytes or length".to_string());
@@ -13,15 +15,13 @@ pub fn resize_image_inline(
 
     log::debug!("Resizing image with length: {}", length);
 
-    let image = image::load_from_memory(bytes).map_err(|e| e.to_string())?;
-    let image_format = image::guess_format(bytes).map_err(|e| e.to_string())?;
-
-    log::debug!("Guessed Image format: {:?}", image_format);
+    let image =
+        image::load_from_memory_with_format(bytes, input_format).map_err(|e| e.to_string())?;
     let resized_image = resize_dynamic_image(&image, upscale_factor)?;
 
     let mut buffer = Vec::new();
     resized_image
-        .write_to(&mut Cursor::new(&mut buffer), image_format)
+        .write_to(&mut Cursor::new(&mut buffer), output_format)
         .map_err(|e| e.to_string())?;
 
     Ok(buffer)
@@ -46,7 +46,11 @@ pub fn resize_dynamic_image(
     );
 
     if new_width == 0 || new_height == 0 {
-        log::error!("Invalid dimensions after resizing: {}x{}", new_width, new_height);
+        log::error!(
+            "Invalid dimensions after resizing: {}x{}",
+            new_width,
+            new_height
+        );
         return Err("Invalid dimensions after resizing".to_string());
     }
 
